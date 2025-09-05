@@ -1,0 +1,243 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* KrishiConnect Agricultural Design System - All colors MUST be HSL */
+
+@layer base {
+  :root {
+    /* Agricultural color palette */
+    --background: 120 20% 98%;
+    --foreground: 120 10% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 120 10% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 120 10% 15%;
+
+    /* Primary - Fresh green for agriculture */
+    --primary: 120 65% 35%;
+    --primary-foreground: 0 0% 98%;
+    --primary-hover: 120 65% 30%;
+
+    /* Secondary - Earth tones */
+    --secondary: 35 25% 90%;
+    --secondary-foreground: 120 10% 15%;
+
+    /* Muted - Soft greens */
+    --muted: 120 20% 95%;
+    --muted-foreground: 120 8% 45%;
+
+    /* Accent - Bright agricultural green */
+    --accent: 120 60% 50%;
+    --accent-foreground: 0 0% 98%;
+
+    /* Status colors */
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --success: 120 65% 40%;
+    --success-foreground: 0 0% 98%;
+    --warning: 45 90% 55%;
+    --warning-foreground: 45 10% 10%;
+
+    --border: 120 20% 88%;
+    --input: 120 20% 95%;
+    --ring: 120 65% 35%;
+
+    /* Agricultural gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(120 65% 35%), hsl(120 70% 45%));
+    --gradient-secondary: linear-gradient(135deg, hsl(35 25% 90%), hsl(120 20% 95%));
+    --gradient-hero: linear-gradient(135deg, hsl(120 65% 35%), hsl(120 70% 45%), hsl(85 60% 50%));
+    
+    /* Shadows with green tint */
+    --shadow-soft: 0 2px 8px hsl(120 20% 20% / 0.08);
+    --shadow-medium: 0 4px 16px hsl(120 20% 20% / 0.12);
+    --shadow-strong: 0 8px 32px hsl(120 20% 20% / 0.16);
+    --shadow-glow: 0 0 0 1px hsl(120 65% 35% / 0.2);
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 120 15% 8%;
+    --foreground: 120 10% 95%;
+
+    --card: 120 15% 10%;
+    --card-foreground: 120 10% 95%;
+
+    --popover: 120 15% 10%;
+    --popover-foreground: 120 10% 95%;
+
+    --primary: 120 70% 50%;
+    --primary-foreground: 120 15% 8%;
+    --primary-hover: 120 70% 55%;
+
+    --secondary: 120 10% 15%;
+    --secondary-foreground: 120 10% 95%;
+
+    --muted: 120 10% 15%;
+    --muted-foreground: 120 8% 65%;
+
+    --accent: 120 70% 50%;
+    --accent-foreground: 120 15% 8%;
+
+    --destructive: 0 75% 55%;
+    --destructive-foreground: 0 0% 98%;
+    --success: 120 70% 50%;
+    --success-foreground: 120 15% 8%;
+    --warning: 45 95% 60%;
+    --warning-foreground: 45 15% 10%;
+
+    --border: 120 10% 20%;
+    --input: 120 10% 15%;
+    --ring: 120 70% 50%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(120 70% 50%), hsl(120 75% 60%));
+    --gradient-secondary: linear-gradient(135deg, hsl(120 10% 15%), hsl(120 10% 20%));
+    --gradient-hero: linear-gradient(135deg, hsl(120 70% 50%), hsl(120 75% 60%), hsl(85 65% 55%));
+    
+    --shadow-soft: 0 2px 8px hsl(120 50% 5% / 0.3);
+    --shadow-medium: 0 4px 16px hsl(120 50% 5% / 0.4);
+    --shadow-strong: 0 8px 32px hsl(120 50% 5% / 0.5);
+    --shadow-glow: 0 0 0 1px hsl(120 70% 50% / 0.3);
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-muted;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-primary/50 rounded-full;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-primary/70;
+  }
+}
+
+@layer components {
+  /* Agricultural themed animations */
+  .animate-grow {
+    animation: grow 0.6s ease-out forwards;
+  }
+  
+  .animate-fade-up {
+    animation: fadeUp 0.6s ease-out forwards;
+  }
+  
+  .animate-bounce-gentle {
+    animation: bounceGentle 2s ease-in-out infinite;
+  }
+  
+  .chat-bubble-user {
+    @apply bg-primary text-primary-foreground rounded-2xl rounded-br-md px-4 py-2 max-w-[80%] ml-auto shadow-sm;
+  }
+  
+  .chat-bubble-bot {
+    @apply bg-card text-card-foreground rounded-2xl rounded-bl-md px-4 py-2 max-w-[80%] shadow-sm border;
+  }
+  
+  .glass-effect {
+    @apply backdrop-blur-sm bg-white/10 border border-white/20;
+  }
+  
+  .agricultural-card {
+    @apply bg-card border border-border rounded-xl p-6 shadow-soft hover:shadow-medium transition-all duration-300;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .shadow-soft {
+    box-shadow: var(--shadow-soft);
+  }
+  
+  .shadow-medium {
+    box-shadow: var(--shadow-medium);
+  }
+  
+  .shadow-strong {
+    box-shadow: var(--shadow-strong);
+  }
+  
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+}
+
+@keyframes grow {
+  0% {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeUp {
+  0% {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes bounceGentle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
