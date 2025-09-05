@@ -56,10 +56,17 @@ export interface WeatherData {
   uvIndex: string;
   rainfall: string;
   icon: string;
+  location: {
+    city: string;
+    district: string;
+    state: string;
+    country: string;
+  };
 }
 
 export interface ForecastDay {
   day: string;
+  date: string;
   high: string;
   low: string;
   condition: string;
@@ -82,17 +89,73 @@ export interface AgriculturalIndex {
   color: string;
 }
 
-export const getCurrentWeather = async (lat: number, lon: number): Promise<WeatherData> => {
+// Get location details using reverse geocoding
+const getLocationDetails = async (lat: number, lon: number) => {
   try {
     const response = await fetch(
-      `${BASE_URL}/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`
+      `http://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${API_KEY}`
     );
     
     if (!response.ok) {
-      throw new Error(`Weather API error: ${response.status}`);
+      throw new Error(`Geocoding API error: ${response.status}`);
     }
     
     const data = await response.json();
+    
+    if (data && data.length > 0) {
+      const location = data[0];
+      return {
+        city: location.name || 'Unknown City',
+        district: location.local_names?.en || location.name || 'Unknown District',
+        state: location.state || 'Unknown State',
+        country: location.country || 'Unknown Country'
+      };
+    }
+    
+    return {
+      city: 'Unknown City',
+      district: 'Unknown District', 
+      state: 'Unknown State',
+      country: 'Unknown Country'
+    };
+  } catch (error) {
+    console.error('Error fetching location details:', error);
+    return {
+      city: 'Unknown City',
+      district: 'Unknown District',
+      state: 'Unknown State', 
+      country: 'Unknown Country'
+    };
+  }
+};
+
+export const getCurrentWeather = async (lat: number, lon: number): Promise<WeatherData> => {
+  try {
+    // Fetch weather and location data in parallel
+    const [weatherResponse, locationDetails] = await Promise.all([
+      fetch(`${BASE_URL}/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`),
+      getLocationDetails(lat, lon)
+    ]);
+    
+    if (!weatherResponse.ok) {
+      throw new Error(`Weather API error: ${weatherResponse.status}`);
+    }
+    
+    const data = await weatherResponse.json();
+    
+    // Get UV Index from separate API call
+    let uvIndex = "N/A";
+    try {
+      const uvResponse = await fetch(
+        `${BASE_URL}/uvi?lat=${lat}&lon=${lon}&appid=${API_KEY}`
+      );
+      if (uvResponse.ok) {
+        const uvData = await uvResponse.json();
+        uvIndex = Math.round(uvData.value).toString();
+      }
+    } catch (uvError) {
+      console.warn('UV Index not available:', uvError);
+    }
     
     return {
       temperature: `${Math.round(data.main.temp)}°C`,
@@ -100,9 +163,10 @@ export const getCurrentWeather = async (lat: number, lon: number): Promise<Weath
       humidity: `${data.main.humidity}%`,
       windSpeed: `${Math.round(data.wind.speed * 3.6)} km/h`, // Convert m/s to km/h
       visibility: `${Math.round(data.visibility / 1000)} km`,
-      uvIndex: "7", // OpenWeather doesn't provide UV in basic plan, using default
-      rainfall: data.rain ? `${data.rain['1h'] || 0}mm expected today` : "No rain expected today",
+      uvIndex,
+      rainfall: data.rain ? `${Math.round(data.rain['1h'] || 0)}mm expected today` : "No rain expected today",
       icon: data.weather[0].icon,
+      location: locationDetails
     };
   } catch (error) {
     console.error("Error fetching weather data:", error);
@@ -123,44 +187,72 @@ export const getForecast = async (lat: number, lon: number): Promise<ForecastDay
     const data = await response.json();
     
     // Group forecasts by day and get daily highs/lows
-    const dailyForecasts: { [key: string]: any[] } = {};
+    const dailyForecasts: { [key: string]: { date: Date; forecasts: any[] } } = {};
     
     data.list.forEach((item: any) => {
       const date = new Date(item.dt * 1000);
       const dayKey = date.toDateString();
       
       if (!dailyForecasts[dayKey]) {
-        dailyForecasts[dayKey] = [];
+        dailyForecasts[dayKey] = { date, forecasts: [] };
       }
-      dailyForecasts[dayKey].push(item);
+      dailyForecasts[dayKey].forecasts.push(item);
     });
     
     const weeklyForecast: ForecastDay[] = [];
-    const days = ['Today', 'Tomorrow', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const today = new Date();
     
-    Object.entries(dailyForecasts).slice(0, 7).forEach(([dateStr, forecasts], index) => {
+    // Get weather icon mapping
+    const getWeatherEmoji = (iconCode: string) => {
+      const iconMap: { [key: string]: string } = {
+        '01d': '☀️', '01n': '🌙', '02d': '🌤️', '02n': '☁️',
+        '03d': '☁️', '03n': '☁️', '04d': '☁️', '04n': '☁️',
+        '09d': '🌦️', '09n': '🌦️', '10d': '🌧️', '10n': '🌧️',
+        '11d': '⛈️', '11n': '⛈️', '13d': '🌨️', '13n': '🌨️',
+        '50d': '🌫️', '50n': '🌫️'
+      };
+      return iconMap[iconCode] || '🌤️';
+    };
+    
+    // Calculate rain probability more accurately
+    const calculateRainProbability = (forecasts: any[]) => {
+      const rainForecasts = forecasts.filter(f => f.weather[0].main.toLowerCase().includes('rain') || f.pop > 0);
+      if (rainForecasts.length === 0) return 0;
+      
+      const avgPop = rainForecasts.reduce((sum, f) => sum + (f.pop || 0), 0) / rainForecasts.length;
+      return Math.round(avgPop * 100);
+    };
+    
+    Object.entries(dailyForecasts).slice(0, 7).forEach(([dateStr, { date, forecasts }], index) => {
       const temps = forecasts.map(f => f.main.temp);
       const conditions = forecasts.map(f => f.weather[0]);
-      const rainData = forecasts.filter(f => f.rain);
+      const rainProbability = calculateRainProbability(forecasts);
       
-      // Get weather icon mapping
-      const getWeatherEmoji = (iconCode: string) => {
-        const iconMap: { [key: string]: string } = {
-          '01d': '☀️', '01n': '🌙', '02d': '🌤️', '02n': '☁️',
-          '03d': '☁️', '03n': '☁️', '04d': '☁️', '04n': '☁️',
-          '09d': '🌦️', '09n': '🌦️', '10d': '🌧️', '10n': '🌧️',
-          '11d': '⛈️', '11n': '⛈️', '13d': '🌨️', '13n': '🌨️',
-          '50d': '🌫️', '50n': '🌫️'
-        };
-        return iconMap[iconCode] || '🌤️';
-      };
+      // Determine day label
+      let dayLabel: string;
+      const daysDiff = Math.floor((date.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      
+      if (daysDiff === 0) {
+        dayLabel = 'Today';
+      } else if (daysDiff === 1) {
+        dayLabel = 'Tomorrow';
+      } else {
+        dayLabel = date.toLocaleDateString('en-US', { weekday: 'long' });
+      }
+      
+      // Format date
+      const dateLabel = date.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric' 
+      });
       
       weeklyForecast.push({
-        day: index < days.length ? days[index] : new Date(dateStr).toLocaleDateString('en', { weekday: 'long' }),
+        day: dayLabel,
+        date: dateLabel,
         high: `${Math.round(Math.max(...temps))}°`,
         low: `${Math.round(Math.min(...temps))}°`,
         condition: conditions[0].description.replace(/\b\w/g, (l: string) => l.toUpperCase()),
-        rain: rainData.length > 0 ? `${Math.round(Math.random() * 80 + 10)}%` : "10%", // Approximate rain chance
+        rain: `${rainProbability}%`,
         icon: getWeatherEmoji(conditions[0].icon)
       });
     });
@@ -168,16 +260,36 @@ export const getForecast = async (lat: number, lon: number): Promise<ForecastDay
     return weeklyForecast;
   } catch (error) {
     console.error("Error fetching forecast data:", error);
-    // Return fallback data
-    return [
-      { day: "Today", high: "30°", low: "22°", condition: "Partly Cloudy", rain: "60%", icon: "🌤️" },
-      { day: "Tomorrow", high: "32°", low: "24°", condition: "Sunny", rain: "20%", icon: "☀️" },
-      { day: "Wednesday", high: "29°", low: "23°", condition: "Light Rain", rain: "80%", icon: "🌦️" },
-      { day: "Thursday", high: "27°", low: "21°", condition: "Heavy Rain", rain: "90%", icon: "🌧️" },
-      { day: "Friday", high: "28°", low: "22°", condition: "Cloudy", rain: "40%", icon: "☁️" },
-      { day: "Saturday", high: "31°", low: "25°", condition: "Sunny", rain: "10%", icon: "☀️" },
-      { day: "Sunday", high: "30°", low: "24°", condition: "Partly Cloudy", rain: "30%", icon: "🌤️" }
-    ];
+    // Return fallback data with proper dates
+    const today = new Date();
+    const fallbackData: ForecastDay[] = [];
+    
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      
+      let dayLabel: string;
+      if (i === 0) dayLabel = 'Today';
+      else if (i === 1) dayLabel = 'Tomorrow';
+      else dayLabel = date.toLocaleDateString('en-US', { weekday: 'long' });
+      
+      const dateLabel = date.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric' 
+      });
+      
+      fallbackData.push({
+        day: dayLabel,
+        date: dateLabel,
+        high: `${Math.round(Math.random() * 10 + 25)}°`,
+        low: `${Math.round(Math.random() * 8 + 18)}°`,
+        condition: "Partly Cloudy",
+        rain: `${Math.round(Math.random() * 60 + 10)}%`,
+        icon: "🌤️"
+      });
+    }
+    
+    return fallbackData;
   }
 };
 

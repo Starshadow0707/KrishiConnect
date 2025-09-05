@@ -1,6 +1,4 @@
-// types/speech.d.ts
-// Add these type declarations to your project to support Web Speech API
-
+// Web Speech API type declarations for voice recognition
 declare global {
   interface Window {
     SpeechRecognition: typeof SpeechRecognition;

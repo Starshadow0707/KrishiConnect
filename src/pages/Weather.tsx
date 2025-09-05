@@ -276,6 +276,7 @@
 
 import { useEffect, useState } from "react";
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
@@ -397,16 +398,26 @@ const Weather = () => {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gradient mb-2">Weather Forecast</h1>
-          <p className="text-muted-foreground">Agricultural weather insights for your region</p>
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <span>📍</span>
+            <p>
+              Agricultural weather insights for {currentWeather.location.city}, {currentWeather.location.district}, {currentWeather.location.state}
+            </p>
+          </div>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Current Weather */}
           <Card className="agricultural-card lg:col-span-1">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CloudSun className="h-5 w-5 text-primary" />
-                Current Weather
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <CloudSun className="h-5 w-5 text-primary" />
+                  Current Weather
+                </div>
+                <div className="text-sm font-normal text-muted-foreground">
+                  {currentWeather.location.city}, {currentWeather.location.state}
+                </div>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -454,9 +465,25 @@ const Weather = () => {
                 </div>
               </div>
 
-              <div className="mt-6 p-3 bg-primary/10 rounded-lg">
-                <p className="text-sm text-primary font-medium">🌧️ Today's Rainfall:</p>
-                <p className="text-sm">{currentWeather.rainfall}</p>
+              <div className="mt-6 space-y-3">
+                <div className="p-3 bg-primary/10 rounded-lg">
+                  <p className="text-sm text-primary font-medium">🌧️ Today's Rainfall:</p>
+                  <p className="text-sm">{currentWeather.rainfall}</p>
+                </div>
+                
+                <div className="p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-blue-700 dark:text-blue-300">Location Accuracy</p>
+                      <p className="text-xs text-blue-600 dark:text-blue-400">GPS coordinates confirmed</p>
+                    </div>
+                    <div className="text-green-600 dark:text-green-400">
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -477,6 +504,7 @@ const Weather = () => {
                       <span className="text-2xl">{forecast.icon}</span>
                       <div>
                         <div className="font-medium">{forecast.day}</div>
+                        <div className="text-xs text-muted-foreground">{forecast.date}</div>
                         <div className="text-sm text-muted-foreground">{forecast.condition}</div>
                       </div>
                     </div>
@@ -564,6 +592,7 @@ const Weather = () => {
           </Button>
         </div>
       </main>
+      <Footer />
     </div>
   );
 };

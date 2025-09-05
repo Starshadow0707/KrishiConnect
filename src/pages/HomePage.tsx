@@ -1,4 +1,5 @@
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import HeroSection from "@/components/HeroSection";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -193,15 +194,7 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-card border-t border-border py-8">
-        <div className="container mx-auto px-4">
-          <div className="text-center text-muted-foreground">
-            <p className="mb-2">© 2025 KrishiConnect - Kerala Government Initiative</p>
-            <p className="text-sm">Empowering farmers with AI-driven agricultural solutions</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };

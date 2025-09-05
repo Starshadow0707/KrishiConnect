@@ -341,35 +341,38 @@ const Profile = () => {
               </CardContent>
             </Card>
 
-            {/* Notification Settings */}
+            {/* Quick Actions */}
             <Card className="agricultural-card">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Bell className="h-5 w-5" />
-                  Notifications
+                  <Settings className="h-5 w-5" />
+                  Quick Actions
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" defaultChecked className="rounded" />
-                    <span className="text-sm">Weather Alerts</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" defaultChecked className="rounded" />
-                    <span className="text-sm">Market Price Updates</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" className="rounded" />
-                    <span className="text-sm">Disease Outbreak Warnings</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" defaultChecked className="rounded" />
-                    <span className="text-sm">Seasonal Farming Tips</span>
-                  </label>
+                  <Button variant="outline" className="w-full justify-start" asChild>
+                    <a href="/settings">
+                      <Bell className="h-4 w-4 mr-2" />
+                      Notification Settings
+                    </a>
+                  </Button>
+                  <Button variant="outline" className="w-full justify-start" asChild>
+                    <a href="/disease-detection">
+                      <Camera className="h-4 w-4 mr-2" />
+                      Disease Detection
+                    </a>
+                  </Button>
+                  <Button variant="outline" className="w-full justify-start" asChild>
+                    <a href="/weather">
+                      <Globe className="h-4 w-4 mr-2" />
+                      Weather Forecast
+                    </a>
+                  </Button>
                 </div>
               </CardContent>
             </Card>
+
           </div>
         </div>
       </main>
